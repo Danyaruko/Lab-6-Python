@@ -15,11 +15,11 @@ using following technological stack:
  In order to have this program work, you should:
 1. Download a zip version of repository 
 2. Unpack it to any location convenient for you and create in the repository a .env file, where assign such variables:
-         user - for your desired MySQL user
-         password - the password for the user
-         host - name of the host whichever your MySQL server runs on
-         port - number of the port whichever your MySQL server runs on
-         database - name of database you will create to work with this program
+    - user - for your desired MySQL user
+    - password - the password for the user
+    - host - name of the host whichever your MySQL server runs on
+    - port - number of the port whichever your MySQL server runs on
+    - database - name of database you will create to work with this program
 3. Create a new virtual environment 
 4. Activate new environment and pip install requirements.txt
 5. Create a database with name specified in .env 
