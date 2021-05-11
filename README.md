@@ -14,8 +14,7 @@ using following technological stack:
  In addition to listed above, you should be able to test REST service by any mean convenient to you(I personnaly use Postman)
  In order to have this program work, you should:
 1. Download a zip version of repository 
-2. Unpack it to any location convenient for you
-2. 1) Create in the repository a .env file, where assign such variables:
+2. Unpack it to any location convenient for you and create in the repository a .env file, where assign such variables:
          user - for your desired MySQL user
          password - the password for the user
          host - name of the host whichever your MySQL server runs on
