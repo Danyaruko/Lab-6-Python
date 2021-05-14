@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from marshmallow_enum import EnumField
+from marshmallow import fields, validate, exceptions
 from country import Country
 from colour import Colour
 from material import Material
@@ -49,14 +50,25 @@ class Basket(db.Model):
                  self.size_in_liters = size_in_liters
                  self.utility = utility
                  self.weight_in_grams = weight_in_grams
-                 
-                 
-                 
+    def update(self, basketname, country_of_origin, colour, 
+                 material, number_of_handles, price_in_uah, size_in_liters, 
+                 utility, weight_in_grams):
+                 self.__init__(basketname, country_of_origin, colour, material, number_of_handles, price_in_uah,
+                               size_in_liters, utility, weight_in_grams)
+                               
+
+def get_basket_by_id(id):
+    basket = Basket.query.get(id)
+    if basket is None:
+        return abort(404)
+    return basket
+
 class BasketSchema(ma.Schema):
     country_of_origin = EnumField(Country)
     colour = EnumField(Colour)
     material = EnumField(Material)
     utility = EnumField(Utility)
+    basketname = fields.String(validate=validate.Length(max=80))
 
     class Meta:
         # Fields to expose
@@ -67,22 +79,15 @@ class BasketSchema(ma.Schema):
 basket_schema = BasketSchema()
 baskets_schema = BasketSchema(many=True)
 
+@app.errorhandler(exceptions.ValidationError)
+def handle_exception(e):
+    return e.messages, 400
 
 # endpoint to create new basket
 @app.route("/basket", methods=["POST"])
 def add_basket():
-    basketname = request.json['basketname']  
-    country_of_origin = request.json['country_of_origin']
-    colour = request.json['colour']
-    material = request.json['material']
-    number_of_handles = request.json['number_of_handles']
-    price_in_uah = request.json['price_in_uah']
-    size_in_liters = request.json['size_in_liters']
-    utility = request.json['utility']
-    weight_in_grams = request.json['weight_in_grams']
-    
-    new_basket = Basket(basketname, country_of_origin, colour, material, number_of_handles, price_in_uah,
-                        size_in_liters, utility, weight_in_grams)
+    fields = basket_schema.load(request.json)
+    new_basket = Basket(**fields)
 
     db.session.add(new_basket)
     db.session.commit()
@@ -101,13 +106,11 @@ def get_basket():
 # endpoint to get basket detail by id
 @app.route("/basket/<id>", methods=["GET"])
 def basket_detail(id):
-    basket = Basket.query.get(id)
-    if not basket:
-        abort(404)
+    basket = get_basket_by_id(id)
     return basket_schema.jsonify(basket)
 
 # endpoint to get a teapot state code
-@app.route("/basket/", methods=["GET"])
+@app.route("/teapot", methods=["GET"])
 def teapot_detail():
     abort(418)
     return None
@@ -115,28 +118,10 @@ def teapot_detail():
 # endpoint to update basket 
 @app.route("/basket/<id>", methods=["PUT"])
 def basket_update(id):
-    basket = Basket.query.get(id)
-    if not basket:
-        abort(404)
-    basketname = request.json['basketname']
-    material = request.json['material']
-    country_of_origin = request.json['country_of_origin']
-    colour = request.json['colour']
-    size_in_liters = request.json['size_in_liters']
-    weight_in_grams = request.json['weight_in_grams']
-    price_in_uah = request.json['price_in_uah']
-    utility = request.json['utility']
-    number_of_handles = request.json['number_of_handles']
+    basket = get_basket_by_id(id)
+    fields = basket_schema.load(request.json)
 
-    basket.material = material
-    basket.basketname = basketname
-    basket.country_of_origin = country_of_origin
-    basket.colour = colour
-    basket.size_in_liters = size_in_liters
-    basket.weight_in_grams = weight_in_grams
-    basket.price_in_uah = price_in_uah
-    basket.utility = utility
-    basket.number_of_handles = number_of_handles
+    basket.update(**fields)
 
     db.session.commit()
     return basket_schema.jsonify(basket)
@@ -145,9 +130,7 @@ def basket_update(id):
 # endpoint to delete basket
 @app.route("/basket/<id>", methods=["DELETE"])
 def basket_delete(id):
-    basket = Basket.query.get(id)
-    if not basket:
-        abort(404)
+    basket = get_basket_by_id(id)
     db.session.delete(basket)
     db.session.commit()
 
