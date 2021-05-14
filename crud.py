@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from marshmallow_enum import EnumField
-from basket import Basket
 from country import Country
 from colour import Colour
 from material import Material
